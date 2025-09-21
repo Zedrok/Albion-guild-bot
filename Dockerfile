@@ -1,5 +1,5 @@
 # Usar imagen base de Python más segura
-FROM python:3.11-bookworm-slim
+FROM python:3.11-bullseye-slim
 
 # Establecer directorio de trabajo
 WORKDIR /app
