@@ -309,12 +309,16 @@ async def ver_staff(interaction: discord.Interaction):
     print(f"[{timestamp}] {user_name} ejecutó comando: /ver_staff")
 
     try:
+        # Verificar que estamos en un servidor
+        if not interaction.guild:
+            await interaction.response.send_message('Este comando solo funciona en un servidor')
+            return
+
         # ID del rol específico
         rol_id = 1404279446780772422
-        
+
         # Buscar el rol por ID
         rol = interaction.guild.get_role(rol_id)
-        
         if not rol:
             await interaction.response.send_message(f'Rol con ID {rol_id} no encontrado en este servidor')
             return
@@ -336,7 +340,8 @@ async def ver_staff(interaction: discord.Interaction):
         miembros_con_rol = []
         
         # Procesar todos los miembros del servidor que tienen el rol
-        for member in interaction.guild.members:
+        # interaction.guild ya está verificado como no-None al inicio de la función
+        for member in interaction.guild.members:  # type: ignore
             if rol in member.roles:
                 # Buscar si este miembro es reclutador en la BD
                 reclutados_activos = 0
@@ -404,7 +409,7 @@ async def listar_roles(interaction: discord.Interaction):
         
         mensaje = '**Lista de roles del servidor:**\n\n'
         
-        for rol in interaction.guild.roles:
+        for rol in interaction.guild.roles:  # type: ignore
             # Excluir @everyone ya que no es útil para este caso
             if rol.name != '@everyone':
                 mensaje += f'**{rol.name}** - ID: `{rol.id}`\n'
