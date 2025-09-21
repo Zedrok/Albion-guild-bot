@@ -1,0 +1,5 @@
+discord.py>=2.3.0
+python-dotenv>=1.0.0
+aiohttp>=3.8.0
+# PyNaCl es opcional, solo necesario para funcionalidades de voz
+# pynacl>=1.5.0

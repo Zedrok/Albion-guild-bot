@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  discord-bot:
+    build: .
+    container_name: discord-recruitment-bot
+    restart: unless-stopped
+    env_file:
+      - .env
+    volumes:
+      - ./reclutador.db:/app/reclutador.db
+      - ./bot.log:/app/bot.log
+      - ./bot_runner.log:/app/bot_runner.log
+    networks:
+      - discord-bot-network
+
+networks:
+  discord-bot-network:
+    driver: bridge

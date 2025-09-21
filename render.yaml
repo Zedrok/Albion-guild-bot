@@ -1,0 +1,24 @@
+# Configuración para Render
+# https://render.com/docs/deploy-config
+
+services:
+  - type: web
+    name: discord-recruitment-bot
+    runtime: python3
+    buildCommand: chmod +x install_render.sh && ./install_render.sh
+    startCommand: python render_config.py && python run_bot.py
+    envVars:
+      - key: DISCORD_TOKEN
+        sync: false  # No sincronizar con repositorio (secreto)
+      - key: PYTHONUNBUFFERED
+        value: "1"  # Para ver logs en tiempo real
+      - key: PYTHONHASHSEED
+        value: random  # Para mejor rendimiento
+      - key: PYTHONPATH
+        value: /opt/render/project/src
+    healthCheckPath: /health
+    plan: free  # O starter para más recursos
+
+# Configuración de build
+build:
+  dockerfilePath: ./Dockerfile

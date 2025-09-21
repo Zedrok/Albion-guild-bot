@@ -1,0 +1,26 @@
+[Unit]
+Description=Discord Recruitment Bot
+After=network.target
+Wants=network.target
+
+[Service]
+Type=simple
+User=discord-bot
+Group=discord-bot
+WorkingDirectory=/path/to/discord-reclutador
+ExecStart=/path/to/python3 /path/to/discord-reclutador/run_bot.py
+Restart=always
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=discord-bot
+
+# Configuración de límites
+LimitNOFILE=65536
+MemoryLimit=512M
+
+# Variables de entorno
+Environment=PYTHONUNBUFFERED=1
+
+[Install]
+WantedBy=multi-user.target
