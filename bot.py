@@ -7,6 +7,7 @@ from dotenv import load_dotenv
 from database import create_tables, add_miembro, add_actividad, get_miembro_by_etiqueta, get_reclutados_by_reclutador, get_actividades_by_miembro, count_actividades_by_miembro, delete_miembro, clear_reclutador, get_reclutadores_with_count, get_all_reclutadores_with_count, get_reclutadores_last_activity, get_reclutadores_stats, initialize_reclutadores_table
 import logging
 import sys
+from datetime import datetime
 
 # Configurar logging
 logging.basicConfig(
@@ -80,7 +81,7 @@ class ReclutadorView(discord.ui.View):
         # Ejecutar la limpieza
         deleted_count = clear_reclutador(self.reclutador_etiqueta)
         
-        await interaction.followup.send(f"✅ Se eliminaron {deleted_count} reclutados y todas sus actividades del reclutador {self.reclutador_etiqueta}", ephemeral=True)
+        await interaction.followup.send(f"EXITO: Se eliminaron {deleted_count} reclutados y todas sus actividades del reclutador {self.reclutador_etiqueta}", ephemeral=True)
 
     @discord.ui.button(label="Eliminar Reclutado", style=discord.ButtonStyle.secondary, emoji="👤")
     async def delete_reclutado(self, interaction: discord.Interaction, button: discord.ui.Button):
@@ -126,32 +127,31 @@ class ReclutadoSelect(discord.ui.Select):
 
     async def callback(self, interaction: discord.Interaction):
         try:
+            # Defer para mantener la interacción viva
+            await interaction.response.defer(ephemeral=True)
+
             # Obtener la información del reclutado seleccionado
             conn = sqlite3.connect('reclutador.db')
             cursor = conn.cursor()
             cursor.execute('SELECT etiqueta_miembro FROM miembros WHERE id = ?', (int(self.values[0]),))
             result = cursor.fetchone()
             conn.close()
-            
+
             if result:
                 etiqueta_miembro = result[0]
                 # Eliminar el reclutado
                 deleted = delete_miembro(etiqueta_miembro)
-                
-                if deleted:
-                    await interaction.followup.send(f"✅ Reclutado {etiqueta_miembro} y todas sus actividades han sido eliminados", ephemeral=True)
-                else:
-                    await interaction.followup.send("❌ Error al eliminar el reclutado", ephemeral=True)
-            else:
-                await interaction.followup.send("❌ Reclutado no encontrado", ephemeral=True)
-        except Exception as e:
-            try:
-                await interaction.followup.send(f"Error al procesar la eliminación: {str(e)}", ephemeral=True)
-            except:
-                # Si followup también falla, intentar con response
-                await interaction.response.send_message(f"Error al procesar la eliminación: {str(e)}", ephemeral=True)
 
-@bot.event
+                if deleted:
+                    await interaction.followup.send(f"EXITO: Reclutado {etiqueta_miembro} y todas sus actividades han sido eliminados", ephemeral=True)
+                else:
+                    await interaction.followup.send("ERROR: No se pudo eliminar el reclutado", ephemeral=True)
+            else:
+                await interaction.followup.send("ERROR: Reclutado no encontrado", ephemeral=True)
+        except Exception as e:
+            # Log del error pero no intentar responder para evitar más errores
+            logger.error(f"Error en eliminacion de reclutado: {e}")
+            # No intentar followup aquí para evitar cascada de errores@bot.event
 async def on_ready():
     logger.info(f'Bot conectado como {bot.user}')
     try:
@@ -175,6 +175,11 @@ async def on_error(event, *args, **kwargs):
 @bot.tree.command(name='nuevo_miembro', description='Registra un nuevo miembro reclutado')
 @app_commands.describe(miembro='Etiqueta del nuevo miembro', reclutador='Etiqueta del reclutador')
 async def nuevo_miembro(interaction: discord.Interaction, miembro: discord.Member, reclutador: discord.Member):
+    # Log del comando ejecutado
+    timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    user_name = interaction.user.display_name
+    print(f"[{timestamp}] {user_name} ejecutó comando: /nuevo_miembro")
+
     etiqueta_miembro = str(miembro)
     etiqueta_reclutador = str(reclutador)
     add_miembro(etiqueta_miembro, etiqueta_reclutador)
@@ -183,6 +188,11 @@ async def nuevo_miembro(interaction: discord.Interaction, miembro: discord.Membe
 @bot.tree.command(name='agregar_actividad', description='Agrega una actividad a un reclutado')
 @app_commands.describe(miembro='Etiqueta del reclutado', detalle='Detalle de la actividad')
 async def agregar_actividad(interaction: discord.Interaction, miembro: discord.Member, detalle: str):
+    # Log del comando ejecutado
+    timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    user_name = interaction.user.display_name
+    print(f"[{timestamp}] {user_name} ejecutó comando: /agregar_actividad")
+
     etiqueta_miembro = str(miembro)
     miembro_data = get_miembro_by_etiqueta(etiqueta_miembro)
     if miembro_data:
@@ -194,6 +204,11 @@ async def agregar_actividad(interaction: discord.Interaction, miembro: discord.M
 @bot.tree.command(name='ver_reclutador', description='Muestra estadísticas del reclutador')
 @app_commands.describe(reclutador='Etiqueta del reclutador')
 async def ver_reclutador(interaction: discord.Interaction, reclutador: discord.Member):
+    # Log del comando ejecutado
+    timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    user_name = interaction.user.display_name
+    print(f"[{timestamp}] {user_name} ejecutó comando: /ver_reclutador")
+
     etiqueta_reclutador = str(reclutador)
     
     try:
@@ -242,6 +257,11 @@ async def ver_reclutador(interaction: discord.Interaction, reclutador: discord.M
 @bot.tree.command(name='ver_reclutado', description='Muestra detalles de un reclutado')
 @app_commands.describe(miembro='Etiqueta del reclutado')
 async def ver_reclutado(interaction: discord.Interaction, miembro: discord.Member):
+    # Log del comando ejecutado
+    timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    user_name = interaction.user.display_name
+    print(f"[{timestamp}] {user_name} ejecutó comando: /ver_reclutado")
+
     etiqueta_miembro = str(miembro)
     
     try:
@@ -283,6 +303,11 @@ async def ver_reclutado(interaction: discord.Interaction, miembro: discord.Membe
 
 @bot.tree.command(name='ver_staff', description='Ver todos los miembros con rol específico y sus reclutados activos')
 async def ver_staff(interaction: discord.Interaction):
+    # Log del comando ejecutado
+    timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    user_name = interaction.user.display_name
+    print(f"[{timestamp}] {user_name} ejecutó comando: /ver_staff")
+
     try:
         # ID del rol específico
         rol_id = 1404279446780772422
@@ -367,6 +392,11 @@ async def ver_staff(interaction: discord.Interaction):
 
 @bot.tree.command(name='listar_roles', description='Lista todos los roles del servidor con sus IDs')
 async def listar_roles(interaction: discord.Interaction):
+    # Log del comando ejecutado
+    timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    user_name = interaction.user.display_name
+    print(f"[{timestamp}] {user_name} ejecutó comando: /listar_roles")
+
     try:
         if not interaction.guild:
             await interaction.response.send_message('Este comando solo funciona en un servidor')
