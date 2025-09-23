@@ -10,6 +10,8 @@ services:
     envVars:
       - key: DISCORD_TOKEN
         sync: false  # No sincronizar con repositorio (secreto)
+      - key: DATABASE_URL
+        sync: false  # URL de PostgreSQL
       - key: PYTHONUNBUFFERED
         value: "1"  # Para ver logs en tiempo real
       - key: PYTHONHASHSEED
