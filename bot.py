@@ -301,7 +301,7 @@ async def ver_reclutado(interaction: discord.Interaction, miembro: discord.Membe
         if not interaction.response.is_done():
             await interaction.response.send_message(f'Error al consultar datos: {str(e)}')
 
-@bot.tree.command(name='ver_staff', description='Ver todos los miembros con rol específico y sus reclutados activos')
+@bot.tree.command(name='ver_staff', description='Ver miembros con rol específico que tienen actividad registrada')
 async def ver_staff(interaction: discord.Interaction):
     # Log del comando ejecutado
     timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
@@ -363,14 +363,15 @@ async def ver_staff(interaction: discord.Interaction):
                         ultima_actividad = stats['ultimo_reclutamiento'] or 'Nunca'
                         break
                 
-                # Agregar el miembro a la lista con toda la información
-                miembros_con_rol.append((member, reclutados_activos, total_historico, ultima_actividad))
+                # Agregar el miembro a la lista con toda la información SOLO si tiene actividad registrada
+                if ultima_actividad != 'Nunca':
+                    miembros_con_rol.append((member, reclutados_activos, total_historico, ultima_actividad))
         
         if not miembros_con_rol:
-            await interaction.response.send_message(f'No se encontraron miembros con el rol **{rol.name}**')
+            await interaction.response.send_message(f'No se encontraron miembros con el rol **{rol.name}** que tengan actividad registrada')
             return
         
-        mensaje = f'**Miembros con rol {rol.name}:**\n\n'
+        mensaje = f'**Miembros con rol {rol.name} (con actividad registrada):**\n\n'
         
         for member, reclutados_activos, total_historico, ultima_actividad in miembros_con_rol:
             # Obtener el display name
