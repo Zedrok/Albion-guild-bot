@@ -4,7 +4,9 @@ from psycopg2.extras import RealDictCursor
 from datetime import datetime
 
 def get_connection():
-    database_url = os.environ.get('DATABASE_URL', 'postgresql://albion_user:Cggz08RxsbOwg8ZJeKThifhioYHau5A9@dpg-d38ug2be5dus73afm0cg-a.ohio-postgres.render.com/albion_db_ikv8')
+    database_url = os.environ.get('DATABASE_URL')
+    if not database_url:
+        raise ValueError("DATABASE_URL no está configurada en las variables de entorno")
     return psycopg2.connect(database_url, cursor_factory=RealDictCursor)
 
 def create_tables():
